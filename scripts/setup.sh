@@ -1,5 +1,5 @@
 set -e
-project="$(cd "$(dirname "$0")" && pwd)"
+project="$(cd "$(dirname "$0")/.." && pwd)"
 env_dir=/kaggle/temp/newt-isolated/python-env
 export PYTHONPATH=/kaggle/temp/newt-isolated/bootstrap
 export UV_CACHE_DIR=/kaggle/temp/newt-isolated/cache
@@ -14,5 +14,5 @@ python -m uv pip install --python "$env_dir/bin/python" -r "$project/requirement
 python -m uv pip freeze --python "$env_dir/bin/python" > "$project/environment.txt"
 unset PYTHONPATH
 printf "%s\n" 1d3fc058b81ddf8d36a5457c29ea407dd374c1b8 > "$project/source-commit.txt"
-"$env_dir/bin/python" "$project/scripts/prepare_runtime.py" "$project/upstream" /kaggle/temp/newt-isolated/runtime "$project"
+"$env_dir/bin/python" "$project/scripts/prepare_runtime.py" "$project/third_party/newt" /kaggle/temp/newt-isolated/runtime "$project"
 "$env_dir/bin/python" "$project/scripts/download_weights.py"

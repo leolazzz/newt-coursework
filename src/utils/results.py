@@ -3,7 +3,7 @@ import csv
 import statistics
 import zipfile
 from pathlib import Path
-from . import settings as S
+from src.utils import settings as S
 
 
 def write_csv(path, rows):
@@ -50,6 +50,6 @@ def bundle():
     with zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as z:
         for path in S.ROOT.rglob('*'):
             rel = path.relative_to(S.ROOT)
-            if path.is_file() and not any(p in {'upstream','checkpoints','__pycache__','.git'} for p in rel.parts):
+            if path.is_file() and not any(p in {'third_party','checkpoints','__pycache__','.git'} for p in rel.parts):
                 z.write(path, Path('newt-multitask-full')/rel)
     temp.replace(S.ARCHIVE)

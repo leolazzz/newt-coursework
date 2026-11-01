@@ -9,5 +9,6 @@
     "envs/wrappers/vectorized_multitask.py: RGB embedding import moved inside condition"
   ],
   "core_model_planner_buffer_updates_changed": false,
-  "included_source": "upstream: complete unmodified git archive at pinned commit"
+  "included_source": "third_party/newt: complete unmodified git archive at pinned commit",
+  "structure_reference": "https://github.com/Blinorot/pytorch_project_template"
 }

@@ -5,12 +5,12 @@ from dataclasses import asdict
 import numpy as np
 import torch
 from tensordict import TensorDict
-from . import settings as S
-from .official import Buffer, set_seed
-from .agent import make_agent, make_task_env
-from .rollout import rollout
-from .utils import save, check_time
-from .results import bundle
+from src.utils import settings as S
+from src.utils.official import Buffer, set_seed
+from src.model.agent import make_agent, make_task_env
+from src.trainer.rollout import rollout
+from src.utils.io import save, check_time
+from src.utils.results import bundle
 
 
 def to_replay(obs, act, rew, task_ids):
@@ -23,24 +23,24 @@ def to_replay(obs, act, rew, task_ids):
 def train(raw_cfg, folder, branch, seed):
     started = time.perf_counter()
     set_seed(seed)
-    agent, cfg = make_agent(raw_cfg, S.TRAIN_TASKS, seed=seed)
-    env, ids, env_cfg = make_task_env(cfg, S.TRAIN_TASKS, seed)
+    agent, cfg = make_agent(raw_cfg, S.config.train_tasks, seed=seed)
+    env, ids, env_cfg = make_task_env(cfg, S.config.train_tasks, seed)
     save(folder / 'model-config.json', asdict(cfg))
     save(folder / 'env-config.json', asdict(env_cfg))
-    buffer = Buffer(capacity=12000, batch_size=S.BATCH_SIZE, horizon=3, compile=False)
+    buffer = Buffer(capacity=12000, batch_size=S.config.batch_size, horizon=3, compile=False)
     updates, training_seconds, timings = 0, 0.0, []
-    round_steps = 500 * len(S.TRAIN_TASKS)
+    round_steps = 500 * len(S.config.train_tasks)
     try:
-        for index in range(S.WARMUP_ROUNDS + S.LEARNING_ROUNDS):
+        for index in range(S.config.warmup_rounds + S.config.learning_rounds):
             check_time()
             t = time.perf_counter()
             obs, act, rew, timing = rollout(agent, env, ids, branch,
                 folder / f'rollout-{index:03}.npz', training=True,
-                random_actions=index < S.WARMUP_ROUNDS)
+                random_actions=index < S.config.warmup_rounds)
             data = to_replay(obs, act, rew, ids)
-            for i in range(len(S.TRAIN_TASKS)):
+            for i in range(len(S.config.train_tasks)):
                 buffer.add(data[:, i].unsqueeze(0))
-            count = 0 if index < S.WARMUP_ROUNDS else int(round_steps * S.UTD)
+            count = 0 if index < S.config.warmup_rounds else int(round_steps * S.config.utd)
             torch.cuda.synchronize()
             update_start = time.perf_counter()
             with (folder / 'updates.jsonl').open('a') as log:
@@ -63,8 +63,8 @@ def train(raw_cfg, folder, branch, seed):
                 elapsed_seconds=time.perf_counter()-started,
                 peak_cuda_bytes=torch.cuda.max_memory_allocated(),
                 peak_rss_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-            print(f'{folder.name}: {step}/300000, updates={updates}', flush=True)
-            if index in S.CHECKPOINT_ROUNDS:
+            print(f'{folder.name}: {step}/{S.config.learning_rounds*round_steps}, updates={updates}', flush=True)
+            if index in S.config.checkpoint_rounds:
                 point = folder / f'step-{step:06}'
                 point.mkdir()
                 torch.save({'model':agent.model.state_dict()}, point/'checkpoint.pt')

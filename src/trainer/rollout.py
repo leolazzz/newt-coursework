@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import torch
-from . import settings as S
+from src.utils import settings as S
 
 
 def rollout(agent, env, task_ids, mode, path, training=False, random_actions=False):
@@ -16,7 +16,7 @@ def rollout(agent, env, task_ids, mode, path, training=False, random_actions=Fal
             torch.cuda.synchronize()
             t = time.perf_counter()
             action = env.rand_act() if random_actions else agent(
-                obs, t0=done, step=S.PLAN_STEP, task=task_ids,
+                obs, t0=done, step=S.config.planner_step, task=task_ids,
                 eval_mode=not training, mpc=mode == 'mpc')
             torch.cuda.synchronize()
             action_times.append(time.perf_counter() - t)

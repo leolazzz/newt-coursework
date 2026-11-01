@@ -1,79 +1,58 @@
 # Newt coursework
 
-Небольшое совместное дообучение официального multitask Newt S (2M).
-
-## Запуск на Kaggle
-
-1. Создать пустой приватный GitHub-репозиторий `newt-coursework`, без README и .gitignore.
-2. Из локальной папки проекта отправить существующий commit:
-
-```powershell
-cd C:\Users\leola\Downloads\newt\newt-coursework
-git remote add origin https://github.com/YOUR_GITHUB_LOGIN/newt-coursework.git
-git push -u origin main
-```
-
-В URL заменить YOUR_GITHUB_LOGIN. Для push используется обычная локальная авторизация GitHub.
-
-3. Создать GitHub fine-grained token: доступ только к этому репозиторию,
-   Repository permissions -> Contents -> Read-only.
-4. Импортировать `kaggle.ipynb` в Kaggle. В настройках Secrets добавить `GITHUB_TOKEN`
-   со значением токена и разрешить доступ этому ноутбуку. Сам токен в ячейки не вставлять.
-5. В первой ячейке заменить REPOSITORY на `логин/newt-coursework`.
-   REVISION может быть main или точным commit SHA. Фактический SHA сохраняется в project-commit.txt.
-6. Включить Internet и GPU T4. Выбрать Save Version -> Save & Run All.
-7. После завершения скачать `newt-multitask-full-results.zip` из Output.
-
-Dataset не нужен. Первая ячейка получает snapshot приватного репозитория через GitHub API
-по конкретному commit и распаковывает проект. Остальные устанавливают окружение,
-запускают эксперимент и показывают таблицу. Токен не записывается в файлы проекта.
-Для повторения прежнего запуска указать SHA из project-commit.txt в REVISION.
-
-Код работает из `/kaggle/working/newt-coursework`, окружение отдельно в `/kaggle/temp`.
-Ориентир по пилоту: 7-9 часов без установки. Лимит эксперимента 11 часов, включая резерв 15 минут.
-Таймер проверяется между блоками, это не жёсткое завершение процесса.
-Автоматического продолжения прерванного обучения нет. Повторный запуск начинает новый эксперимент.
-Выходные файлы нужно сохранить: новая сессия не восстанавливает их автоматически.
-
-## Файлы
+Совместное дообучение multitask Newt S (2M): сбор опыта с MPC и prior,
+проверка обеих ветвей в обоих режимах. Это уменьшенный эксперимент, не полное обучение статьи.
 
 ```text
-kaggle.ipynb          запуск на Kaggle
-setup.sh             отдельное окружение и один checkpoint
-run.py               точка входа
-requirements.txt     зависимости успешного пилота
-upstream/            полная неизменённая копия репозитория авторов
-scripts/             подготовка runtime и загрузка весов
-newt_experiment/     наш цикл эксперимента
-SOURCE.json          версии исходников и checkpoint
-CHANGES.md           происхождение кода и отличия
-EXPERIMENT_LOG.md    краткий журнал
+train.py              полный эксперимент
+inference.py          только оценивание
+src/configs/          параметры YAML
+src/model/            создание Newt и сред
+src/trainer/          rollout, обучение, оценивание и порядок запусков
+src/utils/            импорты, сохранение результатов и таймер
+third_party/newt/     неизменённый авторский код
+scripts/              установка и подготовка runtime
+kaggle.ipynb          запуск через приватный GitHub
 ```
 
-В `newt_experiment`: settings задаёт параметры; agent создаёт модель и среды;
-rollout собирает эпизод; training вызывает авторское обновление;
-evaluation проверяет веса; results сохраняет таблицы и архив; main задаёт порядок запусков.
+## Kaggle
 
-## Эксперимент
+1. Отправить проект в приватный GitHub-репозиторий.
+2. Импортировать kaggle.ipynb. В первой ячейке указать REPOSITORY, например login/newt-coursework.
+3. Создать GitHub fine-grained token только для этого репозитория: Contents -> Read-only.
+   Добавить в Kaggle Secrets как GITHUB_TOKEN и разрешить доступ ноутбуку.
+4. Включить Internet и T4, выбрать Save Version -> Save & Run All.
 
-- Train: walker-stand/walk/run, hopper-stand/hop, cheetah-run.
-- Held-out: walker-walk-incline, spinner-spin-four. Только оценивание.
-- Две ветви сбора опыта: MPC и prior. Seeds 0, 1, 2.
-- На ветвь и seed: 3000 случайных и 300000 online переходов по шести задачам, 22500 обновлений.
-- Checkpoint: 60k, 120k, 180k, 240k, 300k.
-- Каждый checkpoint оценивается с MPC и prior. Промежуточные точки: 5 evaluation seeds, финал и baseline: 10.
-- Всего 3040 evaluation эпизодов, если бюджет позволит завершить весь протокол.
+Dataset не нужен. REVISION задаёт ветку или commit; фактический SHA сохраняется в project-commit.txt.
+Результат: /kaggle/working/newt-multitask-full-results.zip. Перед новой сессией сохранить Output.
+Код работает в отдельном Python 3.10.22, использует одну GPU. Ориентир 7-9 часов без установки,
+мягкий бюджет 11 часов с резервом 15 минут. Автоматического resume нет.
 
-Это адаптация готовой multitask-модели на знакомых задачах, а не обучение с нуля.
-Held-out задачи отсутствуют в закреплённом списке soup; это узкая проверка новых вариантов задач,
-не доказательство переноса в произвольную новую среду.
-Наш цикл и уменьшенный бюджет отличаются от обучения статьи. Результаты не подменяют авторские CSV.
+Из папки проекта после установки окружения:
 
-В `runs/<время>/`: сырые rollout NPZ, losses JSONL, конфигурации, checkpoint, время,
-сведения о GPU, `episodes.csv`, `by-training-seed.csv`, `summary.csv`, `status.json`.
-Score DMControl: сумма наград эпизода / 1000. Сначала усредняются evaluation seeds
-внутри обучения, затем считается SD между training seeds. Время действия в таблице относится к целому batch сред.
+```bash
+python train.py
+python inference.py
+python inference.py checkpoint=/path/to/checkpoint.pt
+```
 
-[Официальный код](https://github.com/nicklashansen/newt) · [Статья](https://www.nicklashansen.com/NewtWM/) · [Веса](https://huggingface.co/nicklashansen/newt)
+Нужно использовать Python окружения проекта; на Kaggle его полный путь указан в ноутбуке.
+Для изменения протокола отредактировать src/configs/baseline.yaml или передать Hydra override:
+`python train.py experiment.train_seeds=[0]`.
 
-Репозиторий подготовлен локально. Загрузка на GitHub и Kaggle выполняется отдельно.
+## Протокол
+
+Train: walker-stand/walk/run, hopper-stand/hop, cheetah-run.
+Held-out: walker-walk-incline, spinner-spin-four, только оценивание.
+Две ветви x три training seeds. На запуск: 3000 random + 300000 online переходов,
+22500 updates. Checkpoint каждые 60000 переходов; 5 eval seeds на промежуточных точках,
+10 на baseline и финале. Полный протокол: 3040 eval эпизодов.
+
+В runs сохраняются raw NPZ, losses, checkpoint, конфигурация, время, GPU и таблицы.
+Score DMControl = return / 1000. SD считается между training seeds после усреднения eval seeds.
+Новые задачи являются узкой проверкой held-out вариантов, а не произвольной новой среды.
+
+[Источники и изменения](docs/changes.md) · [Журнал](docs/experiments.md)
+
+Структура по образцу [pytorch_project_template](https://github.com/Blinorot/pytorch_project_template).
+Алгоритм из [официального Newt](https://github.com/nicklashansen/newt).

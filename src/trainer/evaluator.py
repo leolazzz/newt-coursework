@@ -1,13 +1,13 @@
 from dataclasses import asdict
-from . import settings as S
-from .agent import make_agent, make_task_env
-from .rollout import rollout
-from .utils import save, check_time
+from src.utils import settings as S
+from src.model.agent import make_agent, make_task_env
+from src.trainer.rollout import rollout
+from src.utils.io import save, check_time
 
 
 def evaluate(raw_cfg, weights, folder, seeds):
     folder.mkdir(parents=True, exist_ok=True)
-    tasks = S.TRAIN_TASKS + S.OOD_TASKS
+    tasks = S.config.train_tasks + S.config.ood_tasks
     agent, cfg = make_agent(raw_cfg, tasks, weights)
     rows = []
     for seed in seeds:
@@ -18,7 +18,7 @@ def evaluate(raw_cfg, weights, folder, seeds):
                 obs, act, rew, timing = rollout(agent, env, ids, mode,
                     folder / f'eval-{seed}-{mode}.npz')
                 for i, task in enumerate(tasks):
-                    rows.append(dict(task=task, split='ood' if task in S.OOD_TASKS else 'train',
+                    rows.append(dict(task=task, split='ood' if task in S.config.ood_tasks else 'train',
                         mode=mode, seed=seed, steps=len(rew), **{'return':timing['returns'][i]},
                         score=timing['returns'][i]/1000,
                         batch_episode_seconds=timing['collection_seconds'],

@@ -1,6 +1,6 @@
 import os
 import sys
-from .settings import RUNTIME
+from src.utils.settings import RUNTIME
 
 os.environ.update(MUJOCO_GL='egl', WANDB_MODE='disabled', WANDB_DISABLED='true',
                   HF_HUB_DISABLE_TELEMETRY='1', HF_HUB_DISABLE_IMPLICIT_TOKEN='1',

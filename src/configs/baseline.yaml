@@ -1,0 +1,31 @@
+defaults:
+  - newt_base@newt
+  - _self_
+
+experiment:
+  train_tasks:
+    - walker-stand
+    - walker-walk
+    - walker-run
+    - hopper-stand
+    - hopper-hop
+    - cheetah-run
+  ood_tasks:
+    - walker-walk-incline
+    - spinner-spin-four
+  train_seeds: [0, 1, 2]
+  eval_seeds: [1000, 1001, 1002, 1003, 1004]
+  final_eval_seeds: [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009]
+  batch_size: 128
+  warmup_rounds: 1
+  learning_rounds: 100
+  checkpoint_rounds: [20, 40, 60, 80, 100]
+  utd: 0.075
+  planner_step: 100000000
+  budget_hours: 11
+
+hydra:
+  run:
+    dir: hydra
+  job:
+    chdir: false
