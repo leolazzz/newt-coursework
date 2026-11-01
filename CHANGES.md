@@ -46,3 +46,7 @@ commit 1d3fc058b81ddf8d36a5457c29ea407dd374c1b8. Файлы внутри не р
 Оценивание начинается после завершения соответствующего обучения, без выбора лучшего checkpoint.
 PLAN_STEP=100000000 фиксирует режим planner после начального annealing;
 это не число переходов нашего обучения и не подтверждённый training step исходных весов.
+
+Kaggle bootstrap получает приватный GitHub snapshot через API с токеном из Kaggle Secrets.
+Сначала main/REVISION разрешается в точный SHA; он записывается в project-commit.txt.
+Git clone и subprocess для загрузки не используются, Dataset не требуется.

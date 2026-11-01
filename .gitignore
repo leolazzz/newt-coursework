@@ -14,3 +14,5 @@ runtime-imports.patch
 tasks-json-sha256.txt
 run.log
 !scripts/runtime-imports.patch
+
+project-commit.txt

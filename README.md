@@ -4,13 +4,31 @@
 
 ## Запуск на Kaggle
 
-1. Загрузить `newt-coursework.zip` в приватный Kaggle Dataset.
-2. Импортировать `kaggle.ipynb` в новый Notebook и подключить Dataset через Add Input.
-3. Включить Internet и GPU T4. Используется одна GPU.
-4. Выбрать Save Version, затем Save & Run All для фонового запуска всех ячеек.
-5. После завершения скачать `newt-multitask-full-results.zip` из Output.
+1. Создать пустой приватный GitHub-репозиторий `newt-coursework`, без README и .gitignore.
+2. Из локальной папки проекта отправить существующий commit:
 
-Четыре кодовые ячейки: копирование проекта, установка, эксперимент, вывод таблицы.
+```powershell
+cd C:\Users\leola\Downloads\newt\newt-coursework
+git remote add origin https://github.com/YOUR_GITHUB_LOGIN/newt-coursework.git
+git push -u origin main
+```
+
+В URL заменить YOUR_GITHUB_LOGIN. Для push используется обычная локальная авторизация GitHub.
+
+3. Создать GitHub fine-grained token: доступ только к этому репозиторию,
+   Repository permissions -> Contents -> Read-only.
+4. Импортировать `kaggle.ipynb` в Kaggle. В настройках Secrets добавить `GITHUB_TOKEN`
+   со значением токена и разрешить доступ этому ноутбуку. Сам токен в ячейки не вставлять.
+5. В первой ячейке заменить REPOSITORY на `логин/newt-coursework`.
+   REVISION может быть main или точным commit SHA. Фактический SHA сохраняется в project-commit.txt.
+6. Включить Internet и GPU T4. Выбрать Save Version -> Save & Run All.
+7. После завершения скачать `newt-multitask-full-results.zip` из Output.
+
+Dataset не нужен. Первая ячейка получает snapshot приватного репозитория через GitHub API
+по конкретному commit и распаковывает проект. Остальные устанавливают окружение,
+запускают эксперимент и показывают таблицу. Токен не записывается в файлы проекта.
+Для повторения прежнего запуска указать SHA из project-commit.txt в REVISION.
+
 Код работает из `/kaggle/working/newt-coursework`, окружение отдельно в `/kaggle/temp`.
 Ориентир по пилоту: 7-9 часов без установки. Лимит эксперимента 11 часов, включая резерв 15 минут.
 Таймер проверяется между блоками, это не жёсткое завершение процесса.
