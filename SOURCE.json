@@ -1,0 +1,13 @@
+{
+  "official_code": "https://github.com/nicklashansen/newt",
+  "commit": "1d3fc058b81ddf8d36a5457c29ea407dd374c1b8",
+  "weights": "https://huggingface.co/nicklashansen/newt",
+  "revision": "7eef11eb63c8ed53d61d739693d7140135ea0876",
+  "checkpoint": "soup-2M-default.pt",
+  "runtime_changes": [
+    "envs/__init__.py: DMControl imports only",
+    "envs/wrappers/vectorized_multitask.py: RGB embedding import moved inside condition"
+  ],
+  "core_model_planner_buffer_updates_changed": false,
+  "included_source": "upstream: complete unmodified git archive at pinned commit"
+}

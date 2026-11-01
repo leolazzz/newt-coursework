@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+checkpoints/
+runs/
+hydra/
+*.zip
+*.tmp
+environment.txt
+latest-run.json
+source-commit.txt
+checkpoint-manifest.json
+runtime-imports.patch
+tasks-json-sha256.txt
+run.log
+!scripts/runtime-imports.patch
