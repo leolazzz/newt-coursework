@@ -12,5 +12,8 @@ from common import set_seed
 from common.buffer import Buffer
 from common.world_model import WorldModel
 from common.math import discount_heuristic
+
+# TorchRL may overwrite the EGL device while importing Buffer.
+os.environ['MUJOCO_EGL_DEVICE_ID'] = '0'
 from envs import make_env
 from tdmpc2 import TDMPC2
